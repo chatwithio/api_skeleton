@@ -5,11 +5,11 @@ framework:
 
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
-            # async: '%env(MESSENGER_TRANSPORT_DSN)%'
-            # failed: 'doctrine://default?queue_name=failed'
+            async: '%env(MESSENGER_TRANSPORT_DSN)%'
+            failed: 'doctrine://default?queue_name=failed'
             sync: 'sync://'
 
         routing:
-            'App\Message\WhatsappNotification': sync
+            'App\Message\WhatsappNotification': async
             # Route your messages to the transports
             # 'App\Message\YourMessage': async
