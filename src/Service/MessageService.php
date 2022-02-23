@@ -2,19 +2,18 @@
 
 namespace App\Service;
 
-use GuzzleHttp\Client;
-
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class MessageService
 {
 
-    private $senderEmail;
+    private $client;
 
     private $wa_id = false;
 
-    private array $env = [
-        'prod' => 'https://waba.360dialog.io',
-        'dev' => 'https://waba-sandbox.360dialog.io',
+    private array $envs = [
+        'PROD' => 'https://waba.360dialog.io',
+        'DEV' => 'https://waba-sandbox.360dialog.io',
 
     ];
 
@@ -50,13 +49,14 @@ class MessageService
     /**
      * WhatsApp360 constructor.
      */
-    public function __construct()
+    public function __construct(HttpClientInterface $client)
     {
+        $this->client = $client;
 
         $this->headers['D360-API-KEY'] = $_ENV['WHATSAPP_KEY'];
 
         foreach ($this->endpoint as $k => $v) {
-            $this->endpoint[$k]['url'] = $this->env[$_SERVER['WHATSAPP_ENV']] . $this->endpoint[$k]['url'];
+            $this->endpoint[$k]['url'] = $this->envs[$_SERVER['WHATSAPP_ENV']] . $this->endpoint[$k]['url'];
         }
     }
 
@@ -73,9 +73,9 @@ class MessageService
         try {
             if ($this->payloadOk === true) {
 
-                $client = new Client;
+                //$client = new GuzzleHttp\Client();
 
-                $request = $client->request(
+                $request = $this->client->request(
                     $this->endpoint[$endpoint]['method'],
                     $this->endpoint[$endpoint]['url'],
                     [
@@ -85,7 +85,7 @@ class MessageService
                 );
 
                 if ($request->getStatusCode() == 200 || $request->getStatusCode() == 201) {
-                    return json_decode($request->getBody()->getContents());
+                    return json_decode($request->getContent());
                 } else {
                     throw new Exception($request->getBody()->getContents());
                 }
