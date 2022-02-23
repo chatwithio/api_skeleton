@@ -32,6 +32,14 @@ class MessageService
             'method' => 'GET',
             'url' => '/v1/configs/templates'
         ],
+        'getWebhook' => [
+            'method' => 'GET',
+            'url' => '/v1/configs/webhook'
+        ],
+        'makeWebhook' => [
+            'method' => 'POST',
+            'url' => '/v1/configs/webhook'
+        ],
     ];
 
     //The header information. It contains the auth token too
@@ -202,6 +210,21 @@ class MessageService
         ];
 
         return $this->send('message', $payload);
+    }
+
+
+    public function makeWebhook($url)
+    {
+        $payload = [
+            "url" => $url
+        ];
+
+        return $this->send('makeWebhook', $payload);
+    }
+
+    public function getWebhook()
+    {
+        return $this->send('getWebhook');
     }
 
 
