@@ -5,116 +5,137 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ORM\Table(name: '`message`')]
-class Message 
+class Message
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer',name:'id')]
     private $id;
 
-    #[ORM\Column(type: 'string', length: 180 ,name:'name')]
-    private $name;
+    #[ORM\Column(type: 'string', length: 255)]
+    private $messageFrom;
 
-    #[ORM\Column(type: 'string', length: 180 ,name:'message')]
-    private $message;
+    #[ORM\Column(type: 'text')]
+    private $textBody;
 
-    #[ORM\Column(type: 'string', length: 180,name:'type')]
-    private $type = [];
+    #[ORM\Column(type: 'string', length: 255)]
+    private $profileName;
 
-    #[ORM\Column(type: 'string', length: 180,name:'order_id')]
-    private $orderId;
+    #[ORM\Column(type: 'bigint')]
+    private $waId;
 
-     #[ORM\Column(type: 'string', length: 180,name:'phone_number')]
-    private $phoneNumber;
+    #[ORM\Column(type: 'string', length: 1)]
+    private $status;
 
+    #[ORM\Column(type: 'string', length: 255)]
+    private $code;
 
-    #[ORM\Column(type: 'bigint',name:'created_at')]
-    private $createdAt;
+    #[ORM\Column(type: 'bigint')]
+    private $timestamp;
+
+    #[ORM\Column(type: 'datetime')]
+    private $created;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getName(): ?string
+
+    public function getMessageFrom(): ?string
     {
-        return $this->name;
+        return $this->messageFrom;
     }
 
-    public function setName(string $name): self
+    public function setMessageFrom(string $messageFrom): self
     {
-        $this->name = $name;
+        $this->messageFrom = $messageFrom;
 
         return $this;
     }
 
-    public function getMessage(): ?string
+    public function getTextBody(): ?string
     {
-        return $this->message;
+        return $this->textBody;
     }
 
-    public function setMessage(string $message): self
+    public function setTextBody(string $textBody): self
     {
-        $this->message = $message;
+        $this->textBody = $textBody;
 
         return $this;
     }
 
-    public function getType(): ?string
+    public function getTimestamp(): ?string
     {
-        return $this->type;
+        return $this->timestamp;
     }
 
-    public function setType(string $type): self
+    public function setTimestamp(string $timestamp): self
     {
-        $this->type = $type;
+        $this->timestamp = $timestamp;
 
         return $this;
     }
 
-    public function getOrderId(): ?string
+    public function getProfileName(): ?string
     {
-        return $this->orderId;
+        return $this->profileName;
     }
 
-    public function setOrderId(string $orderId): self
+    public function setProfileName(string $profileName): self
     {
-        $this->orderId = $orderId;
+        $this->profileName = $profileName;
 
         return $this;
     }
 
-    public function getPhoneNumber(): ?string
+    public function getWaId(): ?string
     {
-        return $this->phoneNumber;
+        return $this->waId;
     }
 
-    public function setPhoneNumber(string $phoneNumber): self
+    public function setWaId(string $waId): self
     {
-        $this->phoneNumber = $phoneNumber;
+        $this->waId = $waId;
 
         return $this;
     }
 
-
-
-    public function getCreatedAt(): ?string
+    public function getStatus(): ?string
     {
-        return $this->createdAt;
+        return $this->status;
     }
 
-    public function setCreatedAt(string $createdAt): self
+    public function setStatus(string $status): self
     {
-        $this->createdAt = $createdAt;
+        $this->status = $status;
 
         return $this;
     }
 
- 
+    public function getCreated(): ?\DateTimeInterface
+    {
+        return $this->created;
+    }
 
+    public function setCreated(\DateTimeInterface $created): self
+    {
+        $this->created = $created;
 
-  
+        return $this;
+    }
 
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
 
+    public function setCode(string $code): self
+    {
+        $this->code = $code;
+
+        return $this;
+    }
 
 }
