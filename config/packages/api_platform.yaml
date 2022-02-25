@@ -1,4 +1,8 @@
 api_platform:
+    show_webby: false
+    title: 'Whatsapp api'
+    description: 'API description'
+    version: '1.0.0'
     mapping:
         paths: ['%kernel.project_dir%/src/Entity']
     patch_formats:
@@ -8,4 +12,4 @@ api_platform:
         api_keys:
             apiKey:
                 name: Authorization
-                type: heade
+                type: header

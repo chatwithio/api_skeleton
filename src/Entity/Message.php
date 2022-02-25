@@ -5,14 +5,18 @@ namespace App\Entity;
 use App\Repository\MessageRepository;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Core\Annotation\ApiFilter;
+
 
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ORM\Table(name: '`message`')]
 #[ApiResource(
     collectionOperations: ['get'],
-    itemOperations: [],
+    itemOperations: ['get'],
 )]
+#[ApiFilter(DateFilter::class, properties: ['created'])]
 
 class Message
 {

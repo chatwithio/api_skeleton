@@ -38,7 +38,7 @@ security:
         # - { path: ^/profile, roles: ROLE_USER }
         - { path: ^/docs, roles: PUBLIC_ACCESS } # Allows accessing API documentations and Swagger UI
         - { path: ^/authentication_token, roles: PUBLIC_ACCESS }
-        - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/message, roles: ROLE_USER } # Allows accessing API documentations and Swagger UI
 
 
 when@test:
