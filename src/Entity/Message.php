@@ -2,13 +2,17 @@
 
 namespace App\Entity;
 
+use App\Repository\MessageRepository;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
 
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 #[ORM\Table(name: '`message`')]
-#[ApiResource]
+#[ApiResource(
+    collectionOperations: ['get'],
+    itemOperations: [],
+)]
 
 class Message
 {
