@@ -14,7 +14,6 @@ use Doctrine\ORM\EntityManagerInterface;
 class WhatsappNotificationHandler
 {
 
-
     private $logger;
 
     private $em;
@@ -22,7 +21,7 @@ class WhatsappNotificationHandler
     private $service;
 
     private $mess = [
-        "S" => "He recibido tu mensaje gracias",
+        "S" => "He recibido el código gracias: ",
         "E" => "No hemos podido encontrar el código"
     ];
 
@@ -38,6 +37,8 @@ class WhatsappNotificationHandler
 
         $datas = json_decode($message->getContent(), true);
 
+
+
         foreach ($datas['messages'] as $k => $data) {
 
             try {
@@ -46,9 +47,11 @@ class WhatsappNotificationHandler
 
                 if($code){
                     $status = "S";
+                    $m = $this->mess[$status]." $code";
                 }
                 else{
                     $status = "E";
+                    $m = $this->mess[$status];
                 }
 
                 $message = new message();
@@ -64,8 +67,7 @@ class WhatsappNotificationHandler
                 $this->em->flush();
 
                 $this->service->sendWhatsAppText(
-                    $datas['contacts'][$k]['wa_id'],
-                    $this->mess[$status]
+                    $datas['contacts'][$k]['wa_id'], $m
                 );
 
             } catch (Exception $e) {
@@ -75,6 +77,11 @@ class WhatsappNotificationHandler
     }
 
     private function extractCode($text){
-        return "123456";
+        if (preg_match("/\d{6,7}/", $text, $matches)) {
+            if (!empty($matches[0])) {
+                return $matches[0];
+            }
+        }
+        return false;
     }
 }

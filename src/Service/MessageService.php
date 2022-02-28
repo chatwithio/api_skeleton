@@ -93,6 +93,8 @@ class MessageService
                 );
 
                 if ($request->getStatusCode() == 200 || $request->getStatusCode() == 201) {
+                    dump($request->getContent());
+                    dump($this->endpoint[$endpoint]['url']);
                     return json_decode($request->getContent());
                 } else {
                     throw new Exception($request->getBody()->getContents());
