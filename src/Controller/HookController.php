@@ -7,9 +7,13 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\MessageService;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+
 
 class HookController extends AbstractController
 {
@@ -59,4 +63,22 @@ class HookController extends AbstractController
         ]);
     }
 
+
+    #[Route('/email-xyx')]
+    public function sendEmail(MailerInterface $mailer): Response
+    {
+        $email = (new Email())
+            ->from('it@gl-uniexco.com')
+            ->to('wardazo@gmail.com')
+            ->subject('Time for Symfony Mailer!')
+            ->text('Sending emails is fun again!')
+            ->html('<p>See Twig integration for better HTML integration!</p>');
+
+        try {
+            $mailer->send($email);
+        } catch (TransportExceptionInterface $e) {
+            dd($e->getMessage());
+        }
+        dd("Semt");
+    }
 }

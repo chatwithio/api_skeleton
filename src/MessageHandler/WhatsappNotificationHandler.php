@@ -5,10 +5,14 @@ namespace App\MessageHandler;
 
 use App\Message\WhatsappNotification;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use App\Entity\Message;
 use App\Service\MessageService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+
 
 #[AsMessageHandler]
 class WhatsappNotificationHandler
@@ -20,24 +24,25 @@ class WhatsappNotificationHandler
 
     private $service;
 
+    private $mailer;
+
     private $mess = [
         "S" => "He recibido el código gracias: ",
         "E" => "No hemos podido encontrar el código"
     ];
 
-    public function __construct(LoggerInterface $logger, EntityManagerInterface $em, MessageService $service)
+    public function __construct(LoggerInterface $logger, EntityManagerInterface $em, MessageService $service, MailerInterface $mailer)
     {
         $this->logger = $logger;
         $this->em = $em;
         $this->service = $service;
+        $this->mailer = $mailer;
     }
 
     public function __invoke(WhatsappNotification $message)
     {
 
         $datas = json_decode($message->getContent(), true);
-
-
 
         foreach ($datas['messages'] as $k => $data) {
 
@@ -73,6 +78,20 @@ class WhatsappNotificationHandler
             } catch (Exception $e) {
                 $this->logger->error($e->getMessage());
             }
+
+            try {
+                $email = (new Email())
+                    ->from('it@gl-uniexco.com')
+                    ->to('transporte@gl-uniexco.com')
+                    ->subject('Código enviado')
+                    ->text($data['text']['body'])
+                    ->html('<p>'.$data['text']['body'].'</p>');
+                $this->mailer->send($email);
+
+            } catch (Exception $e) {
+                $this->logger->error($e->getMessage());
+            }
+
         }
     }
 
