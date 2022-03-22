@@ -26,7 +26,38 @@ class HookController extends AbstractController
 
         $content = $request->getContent();
 
-        /*
+
+
+
+        $bus->dispatch(new WhatsappNotification($content));
+
+        return $this->json([
+            'message' => 'Message sent!',
+        ]);
+    }
+
+
+//    #[Route('/email-xyx')]
+//    public function sendEmail(MailerInterface $mailer): Response
+//    {
+//        $email = (new Email())
+//            ->from('it@gl-uniexco.com')
+//            ->to('wardazo@gmail.com')
+//            ->subject('Time for Symfony Mailer!')
+//            ->text('Sending emails is fun again!')
+//            ->html('<p>See Twig integration for better HTML integration!</p>');
+//
+//        try {
+//            $mailer->send($email);
+//        } catch (TransportExceptionInterface $e) {
+//            dd($e->getMessage());
+//        }
+//        dd("Semt");
+//    }
+}
+
+
+/*
          * Json:
          *
          * {
@@ -48,37 +79,21 @@ class HookController extends AbstractController
                         "timestamp": "1640174341",
                         "type": "text"
                     }
-                ]
-            }
+        ,           {
+                    "from":"34622814642",
+                     "id":"ABGGNGIoFGQvAhAotUuO2TMwu2shZLdk2eza",
+                     "image":{
+                        "caption":"Image test",
+                        "id":"b112e761-9fdb-488c-80be-b2f3fbefa229",
+                        "mime_type":"image/jpeg",
+                        "sha256":"577624e5830df61025568c16e53f5e58fc7bb02c37ef87017547c9ac2c526fc7"
+                     },
+                     "timestamp":"1647940273",
+                     "type":"image"
+                            ]
+                        }
+                    }
          *
          *
          *
          */
-
-
-        $bus->dispatch(new WhatsappNotification($content));
-
-        return $this->json([
-            'message' => 'Message sent!',
-        ]);
-    }
-
-
-    #[Route('/email-xyx')]
-    public function sendEmail(MailerInterface $mailer): Response
-    {
-        $email = (new Email())
-            ->from('it@gl-uniexco.com')
-            ->to('wardazo@gmail.com')
-            ->subject('Time for Symfony Mailer!')
-            ->text('Sending emails is fun again!')
-            ->html('<p>See Twig integration for better HTML integration!</p>');
-
-        try {
-            $mailer->send($email);
-        } catch (TransportExceptionInterface $e) {
-            dd($e->getMessage());
-        }
-        dd("Semt");
-    }
-}
