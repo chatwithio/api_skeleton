@@ -4,6 +4,7 @@
 namespace App\MessageHandler;
 
 use App\Message\WhatsappNotification;
+use App\Service\ProcessMessage;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -17,90 +18,23 @@ use Symfony\Component\Mime\Email;
 #[AsMessageHandler]
 class WhatsappNotificationHandler
 {
+    private LoggerInterface $logger;
 
-    private $logger;
+    private ProcessMessage $processMessage;
 
-    private $em;
-
-    private $service;
-
-    private $mailer;
-
-    private $mess = [
-        "S" => "He recibido el código gracias: ",
-        "E" => "No hemos podido encontrar el código"
-    ];
-
-    public function __construct(LoggerInterface $logger, EntityManagerInterface $em, MessageService $service, MailerInterface $mailer)
+    public function __construct(LoggerInterface $logger, ProcessMessage $processMessage)
     {
         $this->logger = $logger;
-        $this->em = $em;
-        $this->service = $service;
-        $this->mailer = $mailer;
+        $this->processMessage =$processMessage;
     }
 
     public function __invoke(WhatsappNotification $message)
     {
 
-        $datas = json_decode($message->getContent(), true);
+            $datas = json_decode($message->getContent(), true);
+            $this->processMessage->process($datas);
+            dd($datas);
 
-        foreach ($datas['messages'] as $k => $data) {
 
-            try {
-
-                $code = $this->extractCode($data['text']['body']);
-
-                if($code){
-                    $status = "S";
-                    $m = $this->mess[$status]." $code";
-                }
-                else{
-                    $status = "E";
-                    $m = $this->mess[$status];
-                }
-
-                $message = new message();
-                $message->setMessageFrom($data['from']);
-                $message->setTextBody($data['text']['body']);
-                $message->setProfileName($datas['contacts'][$k]['profile']['name']);
-                $message->setWaId($datas['contacts'][$k]['wa_id']);
-                $message->setStatus($status);
-                $message->setCode($code);
-                $message->setTimestamp($data['timestamp']);
-                $message->setCreated(new \DateTime("now"));
-                $this->em->persist($message);
-                $this->em->flush();
-
-                $this->service->sendWhatsAppText(
-                    $datas['contacts'][$k]['wa_id'], $m
-                );
-
-            } catch (Exception $e) {
-                $this->logger->error($e->getMessage());
-            }
-
-            try {
-                $email = (new Email())
-                    ->from('it@gl-uniexco.com')
-                    ->to('transporte@gl-uniexco.com')
-                    ->subject('Código enviado')
-                    ->text($data['text']['body'])
-                    ->html('<p>'.$data['text']['body'].'</p>');
-                $this->mailer->send($email);
-
-            } catch (Exception $e) {
-                $this->logger->error($e->getMessage());
-            }
-
-        }
-    }
-
-    private function extractCode($text){
-        if (preg_match("/\d{6,7}/", $text, $matches)) {
-            if (!empty($matches[0])) {
-                return $matches[0];
-            }
-        }
-        return false;
     }
 }

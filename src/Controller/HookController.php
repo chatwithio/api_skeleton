@@ -26,34 +26,20 @@ class HookController extends AbstractController
 
         $content = $request->getContent();
 
-
-
-
         $bus->dispatch(new WhatsappNotification($content));
 
         return $this->json([
-            'message' => 'Message sent!',
+            'message' => 'OK',
         ]);
     }
 
 
-//    #[Route('/email-xyx')]
-//    public function sendEmail(MailerInterface $mailer): Response
-//    {
-//        $email = (new Email())
-//            ->from('it@gl-uniexco.com')
-//            ->to('wardazo@gmail.com')
-//            ->subject('Time for Symfony Mailer!')
-//            ->text('Sending emails is fun again!')
-//            ->html('<p>See Twig integration for better HTML integration!</p>');
-//
-//        try {
-//            $mailer->send($email);
-//        } catch (TransportExceptionInterface $e) {
-//            dd($e->getMessage());
-//        }
-//        dd("Semt");
-//    }
+    #[Route('/email-xyx')]
+    public function sendEmail(MailerInterface $mailer, MessageService $service): Response
+    {
+        $x = $service->getMedia('b112e761-9fdb-488c-80be-b2f3fbefa229');
+        dd($x);
+    }
 }
 
 

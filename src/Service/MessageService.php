@@ -40,6 +40,10 @@ class MessageService
             'method' => 'POST',
             'url' => '/v1/configs/webhook'
         ],
+        'getMedia' => [
+            'method' => 'GET',
+            'url' => '/v1/media/'
+        ],
     ];
 
     //The header information. It contains the auth token too
@@ -75,28 +79,30 @@ class MessageService
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
 
-    private function send($endpoint, $data = [])
+    private function send($endpoint, $data = [], $arg = '')
     {
 
         try {
             if ($this->payloadOk === true) {
 
-                //$client = new GuzzleHttp\Client();
-
                 $request = $this->client->request(
                     $this->endpoint[$endpoint]['method'],
-                    $this->endpoint[$endpoint]['url'],
+                    $this->endpoint[$endpoint]['url'].$arg,
                     [
                         "headers" => $this->headers,
                         "json" => $data
                     ]
                 );
 
+
+
+
                 if ($request->getStatusCode() == 200 || $request->getStatusCode() == 201) {
                     dump($request->getContent());
                     dump($this->endpoint[$endpoint]['url']);
                     return json_decode($request->getContent());
                 } else {
+                    dd($request);
                     throw new Exception($request->getBody()->getContents());
                 }
             } else {
@@ -229,6 +235,10 @@ class MessageService
         return $this->send('getWebhook');
     }
 
+    public function getMedia($id)
+    {
+        return $this->send('getMedia',null,$id);
+    }
 
     public function getTemplates()
     {
