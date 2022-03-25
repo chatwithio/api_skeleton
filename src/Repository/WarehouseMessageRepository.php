@@ -22,19 +22,20 @@ class WarehouseMessageRepository extends ServiceEntityRepository
     // /**
     //  * @return WarehouseMessage[] Returns an array of WarehouseMessage objects
     //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('w')
-            ->andWhere('w.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('w.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+
+//    public function idExists($id)
+//    {
+//        $res =  $this->createQueryBuilder('w')
+//            ->andWhere('w.is = :val')
+//            ->setParameter('val', $id)
+//            ->andWhere('w.created > :hourago')
+//            ->setParameter('hourago', new \DateTime("now - 1 hour"))
+//            ->setMaxResults(1)
+//            ->getQuery()
+//            ->getResult()
+//        ;
+//    }
+
 
     /*
     public function findOneBySomeField($value): ?WarehouseMessage
