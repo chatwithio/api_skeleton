@@ -22,8 +22,6 @@ class HookController extends AbstractController
     public function index(MessageBusInterface $bus, Request $request, LoggerInterface $logger): Response
     {
 
-        $logger->info('Wooo');
-
         $content = $request->getContent();
 
         $bus->dispatch(new WhatsappNotification($content));

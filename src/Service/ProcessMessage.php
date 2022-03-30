@@ -4,6 +4,7 @@ namespace App\Service;
 
 
 use App\Entity\Message;
+use App\Entity\Photo;
 use App\Entity\WarehouseMessage;
 use App\Repository\WarehouseMessageRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,6 +21,8 @@ class ProcessMessage{
     private $service;
 
     private $mailer;
+
+    private $sendmail;
 
 
     private $message = [
@@ -74,8 +77,10 @@ class ProcessMessage{
                 $this->processWarehouseMessage();
             }
             else{
-                dd("is alacen");
-                $this->processDeliveryMessage();
+                $photo = $this->processDeliveryMessage();
+
+                $this->sendWarehouseEmail($photo);
+
             }
         }
     }
@@ -182,9 +187,45 @@ class ProcessMessage{
 
         if(!$warehouse){
             $warehouse = new WarehouseMessage();
+            $code = $this->extractCode($this->message['message']);
+            $warehouse->setMessageFrom($this->message['from']);
+            $warehouse->setTextBody($this->message['message']);
+            $warehouse->setProfileName($this->message['name']);
+            $warehouse->setWaId($this->message['wi_id']);
+            $warehouse->setStatus('');
+            $warehouse->setCode($code);
+            $warehouse->setTimestamp($this->message['timestamp']);
+            $warehouse->setCreated(new \DateTime("now"));
+            $this->em->persist($warehouse);
+        }
+        $photo = false;
+        if($this->message['image_id'] || $this->message['code2']){
+            // add to the database
+            //but check previous
+
+            $photo = new Photo();
+            $photo->setCode($this->message['code2']);
+            $photo->setWhatsappImageIdentifier($this->message['image_id']);
+            $this->em->persist($photo);
+            $warehouse->addPhoto($photo);
+        }
+        elseif ($this->message['code2']){
+            // add to the database
+            $photo = $this->emptyOrNewPhoto($warehouse,$this->message['code2'],null);
+            //but check previous
+        }
+        elseif ($this->message['image_id']){
+            // add to the database
+            //but check previous
+            $photo = $this->emptyOrNewPhoto($warehouse,null,$this->message['image_id']);
+        }
+        else{
+            //please start adding photos
         }
 
+        $this->em->flush();
 
+        return $photo;
     }
 
     private function validateWarehouseMessage(){
@@ -204,8 +245,10 @@ class ProcessMessage{
         return false;
     }
 
-    private function sendWarehouseEmail(){
-
+    private function sendWarehouseEmail($photo){
+        if(is_object($photo) && $photo->getWhatsappImageIdentifier() && $photo->getCode){
+            //send email
+        }
     }
 
     private function validationError($message){
@@ -222,6 +265,30 @@ class ProcessMessage{
             }
         }
         return false;
+    }
+
+    private function emptyOrNewPhoto($warehouse, $code,$image){
+
+        $lastPhoto = $this->em->getRepository(Photo::class)->findOneBy([
+            "warehouseMessage" => $warehouse,
+        ],['id'=>'DESC']);
+
+        if(!$lastPhoto){
+            return new Photo();
+        }
+        else if($lastPhoto->getWhatsappImageIdentifier() && $lastPhoto->getCode()){
+            return new Photo();
+        }
+        else if($code && !$lastPhoto->getCode()){
+            //find an image without a code
+            return $lastPhoto;
+        }
+        elseif($image && !$lastPhoto->getWhatsappImageIdentifier()){
+            return $lastPhoto;
+        }
+        else{
+            //report orphan!
+        }
     }
 
 }

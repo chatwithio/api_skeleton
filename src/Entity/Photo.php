@@ -13,8 +13,11 @@ class Photo
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    private $whatsappIdentifier;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private $whatsappImageIdentifier;
+
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private $code;
 
     #[ORM\Column(type: 'datetime')]
     private $created;
@@ -28,14 +31,14 @@ class Photo
         return $this->id;
     }
 
-    public function getWhatsappIdentifier(): ?string
+    public function getWhatsappImageIdentifier(): ?string
     {
-        return $this->whatsappIdentifier;
+        return $this->whatsappImageIdentifier;
     }
 
-    public function setWhatsappIdentifier(string $whatsappIdentifier): self
+    public function setWhatsappImageIdentifier(string $whatsappImageIdentifier): self
     {
-        $this->whatsappIdentifier = $whatsappIdentifier;
+        $this->whatsappImageIdentifier = $whatsappImageIdentifier;
 
         return $this;
     }
@@ -60,6 +63,18 @@ class Photo
     public function setWarehouseMessage(?WarehouseMessage $WarehouseMessage): self
     {
         $this->WarehouseMessage = $WarehouseMessage;
+
+        return $this;
+    }
+
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
+    public function setCode(?string $code): self
+    {
+        $this->code = $code;
 
         return $this;
     }
