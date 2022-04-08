@@ -19,6 +19,20 @@ class WarehouseMessageRepository extends ServiceEntityRepository
         parent::__construct($registry, WarehouseMessage::class);
     }
 
+
+    public function getLastMessage($id)
+    {
+        return  $this->createQueryBuilder('w')
+            ->andWhere('w.waId = :id')
+            ->setParameter('id', $id)
+            ->andWhere('w.created > :hourago')
+            ->setParameter('hourago', new \DateTime("now - 1 hour"))
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     // /**
     //  * @return WarehouseMessage[] Returns an array of WarehouseMessage objects
     //  */

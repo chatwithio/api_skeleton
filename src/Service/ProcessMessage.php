@@ -74,10 +74,14 @@ class ProcessMessage{
 
             $this->extractMetaData($datas['contacts'][$k]);
 
+            dump($this->message);
+
             if($this->isWarehouse()){
+                dump("warehouse");
                 $this->processWarehouseMessage();
             }
             else{
+                dump("external delivery");
                 $photo = $this->processDeliveryMessage();
 
                 $this->sendWarehouseEmail($photo);
@@ -184,9 +188,9 @@ class ProcessMessage{
         //Have to whitelist
 
 
-        $warehouse = $this->em->getRepository(WarehouseMessageRepository::class)->find($this->message['code1']);
+        $warehouse = $this->em->getRepository(WarehouseMessage::class)->find($this->message['code1']);
 
-        if(!$warehouse){
+        if($this->message['code1'] || $this->message['code2']){
             $warehouse = new WarehouseMessage();
             $code = $this->extractCode($this->message['message']);
             $warehouse->setMessageFrom($this->message['from']);
@@ -194,39 +198,29 @@ class ProcessMessage{
             $warehouse->setProfileName($this->message['name']);
             $warehouse->setWaId($this->message['wi_id']);
             $warehouse->setStatus('');
-            $warehouse->setCode($code);
+            $warehouse->setCode($this->message['code1']);
+            $warehouse->setCode2($this->message['code2']);
             $warehouse->setTimestamp($this->message['timestamp']);
             $warehouse->setCreated(new \DateTime("now"));
             $this->em->persist($warehouse);
         }
-        $photo = false;
-        if($this->message['image_id'] || $this->message['code2']){
-            // add to the database
-            //but check previous
+        else{
+            //get last one
+            $warehouse = $this->em->getRepository(WarehouseMessage::class)->getLastMessage($this->message['wi_id']);
+        }
 
+        if($warehouse){
             $photo = new Photo();
             $photo->setCode($this->message['code2']);
             $photo->setWhatsappImageIdentifier($this->message['image_id']);
             $this->em->persist($photo);
             $warehouse->addPhoto($photo);
-        }
-        elseif ($this->message['code2']){
-            // add to the database
-            $photo = $this->emptyOrNewPhoto($warehouse,$this->message['code2'],null);
-            //but check previous
-        }
-        elseif ($this->message['image_id']){
-            // add to the database
-            //but check previous
-            $photo = $this->emptyOrNewPhoto($warehouse,null,$this->message['image_id']);
+            $this->em->flush();
+            return $photo;
         }
         else{
-            //please start adding photos
+            //send error message
         }
-
-        $this->em->flush();
-
-        return $photo;
     }
 
     private function validateWarehouseMessage(){
@@ -268,28 +262,28 @@ class ProcessMessage{
         return false;
     }
 
-    private function emptyOrNewPhoto($warehouse, $code,$image){
-
-        $lastPhoto = $this->em->getRepository(Photo::class)->findOneBy([
-            "warehouseMessage" => $warehouse,
-        ],['id'=>'DESC']);
-
-        if(!$lastPhoto){
-            return new Photo();
-        }
-        else if($lastPhoto->getWhatsappImageIdentifier() && $lastPhoto->getCode()){
-            return new Photo();
-        }
-        else if($code && !$lastPhoto->getCode()){
-            //find an image without a code
-            return $lastPhoto;
-        }
-        elseif($image && !$lastPhoto->getWhatsappImageIdentifier()){
-            return $lastPhoto;
-        }
-        else{
-            //report orphan!
-        }
-    }
+//    private function emptyOrNewPhoto($warehouse, $code,$image){
+//
+//        $lastPhoto = $this->em->getRepository(Photo::class)->findOneBy([
+//            "warehouseMessage" => $warehouse,
+//        ],['id'=>'DESC']);
+//
+//        if(!$lastPhoto){
+//            return new Photo();
+//        }
+//        else if($lastPhoto->getWhatsappImageIdentifier() && $lastPhoto->getCode()){
+//            return new Photo();
+//        }
+//        else if($code && !$lastPhoto->getCode()){
+//            //find an image without a code
+//            return $lastPhoto;
+//        }
+//        elseif($image && !$lastPhoto->getWhatsappImageIdentifier()){
+//            return $lastPhoto;
+//        }
+//        else{
+//            //report orphan!
+//        }
+//    }
 
 }

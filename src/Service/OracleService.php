@@ -22,13 +22,17 @@ class OracleService
             $this->dev = true;
         }
         else{
-            try {
-                $this->conn = oci_connect('axtra', 'axtra', '10.247.9.154/Axtra');
-            }
-            catch (\Exception $exception){
-                $this->logger->error($exception->getMessage());
-                die("Database not available");
-            }
+            $this->connect();
+        }
+    }
+
+    private function connect(){
+        try {
+            //$this->conn = oci_connect('axtra', 'axtra', '10.247.9.154/Axtra');
+        }
+        catch (\Exception $exception){
+            $this->logger->error($exception->getMessage());
+            die("Database not available");
         }
     }
 
