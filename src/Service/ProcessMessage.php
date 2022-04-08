@@ -24,7 +24,6 @@ class ProcessMessage{
 
     private $sendmail;
 
-
     private $message = [
         'type'      => null,
         'message'   => null,
@@ -42,12 +41,15 @@ class ProcessMessage{
         "E" => "No hemos podido encontrar el código"
     ];
 
-    public function __construct(LoggerInterface $logger, EntityManagerInterface $em, MessageService $service, MailerInterface $mailer)
+    private $oracle;
+
+    public function __construct(LoggerInterface $logger, EntityManagerInterface $em, MessageService $service, MailerInterface $mailer, OracleService $oracle)
     {
         $this->logger = $logger;
         $this->em = $em;
         $this->service = $service;
         $this->mailer = $mailer;
+        $this->oracle = $oracle;
     }
 
     private function reset(){
@@ -67,7 +69,6 @@ class ProcessMessage{
         foreach ($datas['messages'] as $k => $data) {
             $this->reset();
             if(!$this->extractMessageData($data)){
-                //send an error message
                 die("extraction failed");
             }
 
@@ -136,7 +137,6 @@ class ProcessMessage{
                 return;
             }
 
-
             $message = new message();
             $message->setMessageFrom($this->message['from']);
             $message->setTextBody($this->message['message']);
@@ -182,6 +182,7 @@ class ProcessMessage{
         }
 
         //Have to whitelist
+
 
         $warehouse = $this->em->getRepository(WarehouseMessageRepository::class)->find($this->message['code1']);
 
