@@ -16,10 +16,10 @@ class WarehouseMessage extends Message
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\Column(type: 'string', length: 20, nullable: true)]
-    private $code;
+    #[ORM\Column(type: 'string', length: 20)]
+    private $code1;
 
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
     private $code2;
 
     #[ORM\OneToMany(mappedBy: 'WarehouseMessage', targetEntity: Photo::class)]
@@ -35,14 +35,14 @@ class WarehouseMessage extends Message
         return $this->id;
     }
 
-    public function getCode(): ?string
+    public function getCode1(): ?string
     {
-        return $this->code;
+        return $this->code1;
     }
 
-    public function setCode(?string $code): self
+    public function setCode1(?string $code1): self
     {
-        $this->code = $code;
+        $this->code1 = $code1;
 
         return $this;
     }
@@ -52,7 +52,7 @@ class WarehouseMessage extends Message
         return $this->code2;
     }
 
-    public function setCode2(string $code2): self
+    public function setCode2(?string $code2): self
     {
         $this->code2 = $code2;
 

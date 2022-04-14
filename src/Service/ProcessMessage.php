@@ -186,19 +186,16 @@ class ProcessMessage{
         }
 
         //Have to whitelist
-
-
-        $warehouse = $this->em->getRepository(WarehouseMessage::class)->find($this->message['code1']);
+        $warehouse = $this->em->getRepository(WarehouseMessage::class)->getLastMessage($this->message['wa_id']);
 
         if($this->message['code1'] || $this->message['code2']){
             $warehouse = new WarehouseMessage();
-            $code = $this->extractCode($this->message['message']);
             $warehouse->setMessageFrom($this->message['from']);
             $warehouse->setTextBody($this->message['message']);
             $warehouse->setProfileName($this->message['name']);
-            $warehouse->setWaId($this->message['wi_id']);
+            $warehouse->setWaId($this->message['wa_id']);
             $warehouse->setStatus('');
-            $warehouse->setCode($this->message['code1']);
+            $warehouse->setCode1((string)$this->message['code1']);
             $warehouse->setCode2($this->message['code2']);
             $warehouse->setTimestamp($this->message['timestamp']);
             $warehouse->setCreated(new \DateTime("now"));
@@ -206,12 +203,11 @@ class ProcessMessage{
         }
         else{
             //get last one
-            $warehouse = $this->em->getRepository(WarehouseMessage::class)->getLastMessage($this->message['wi_id']);
+            $warehouse = $this->em->getRepository(WarehouseMessage::class)->getLastMessage($this->message['wa_id']);
         }
 
         if($warehouse){
             $photo = new Photo();
-            $photo->setCode($this->message['code2']);
             $photo->setWhatsappImageIdentifier($this->message['image_id']);
             $this->em->persist($photo);
             $warehouse->addPhoto($photo);

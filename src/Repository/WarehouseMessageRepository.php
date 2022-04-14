@@ -21,7 +21,7 @@ class WarehouseMessageRepository extends ServiceEntityRepository
 
 
     public function getLastMessage($id)
-    {
+    {return;
         return  $this->createQueryBuilder('w')
             ->andWhere('w.waId = :id')
             ->setParameter('id', $id)
@@ -33,33 +33,4 @@ class WarehouseMessageRepository extends ServiceEntityRepository
         ;
     }
 
-    // /**
-    //  * @return WarehouseMessage[] Returns an array of WarehouseMessage objects
-    //  */
-
-//    public function idExists($id)
-//    {
-//        $res =  $this->createQueryBuilder('w')
-//            ->andWhere('w.is = :val')
-//            ->setParameter('val', $id)
-//            ->andWhere('w.created > :hourago')
-//            ->setParameter('hourago', new \DateTime("now - 1 hour"))
-//            ->setMaxResults(1)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-
-    /*
-    public function findOneBySomeField($value): ?WarehouseMessage
-    {
-        return $this->createQueryBuilder('w')
-            ->andWhere('w.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }
