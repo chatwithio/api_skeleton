@@ -45,7 +45,7 @@ class HookController extends AbstractController
          *
          */
 
-        dd($messageService->sendWhatsAppText("34622814642","Hi there"));
+        $messageService->sendWhatsAppText("34622814642","Hi there");
 
         $bus->dispatch(new WhatsappNotification('Whatsapp me!'));
 

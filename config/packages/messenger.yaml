@@ -10,6 +10,6 @@ framework:
             sync: 'sync://'
 
         routing:
-            'App\Message\WhatsappNotification': async
+            'App\Message\WhatsappNotification': sync
             # Route your messages to the transports
             # 'App\Message\YourMessage': async
