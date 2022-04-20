@@ -6,6 +6,7 @@ use App\Repository\WarehouseWhitelistRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: WarehouseWhitelistRepository::class)]
+
 class WarehouseWhitelist
 {
     #[ORM\Id]

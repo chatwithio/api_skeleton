@@ -15,7 +15,7 @@
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^2.11",
         "guzzlehttp/guzzle": "^7.4",
-        "lexik/jwt-authentication-bundle": "^2.14",
+        "lexik/jwt-authentication-bundle": "^2.15",
         "nelmio/cors-bundle": "^2.2",
         "nyholm/psr7": "^1.5",
         "phpdocumentor/reflection-docblock": "^5.3",
@@ -94,6 +94,8 @@
         }
     },
     "require-dev": {
-        "symfony/maker-bundle": "^1.36"
+        "symfony/maker-bundle": "^1.36",
+        "symfony/stopwatch": "6.0.*",
+        "symfony/web-profiler-bundle": "6.0.*"
     }
 }

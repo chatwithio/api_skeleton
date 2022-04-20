@@ -9,15 +9,36 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Message;
 
 #[ORM\Entity(repositoryClass: WarehouseMessageRepository::class)]
-class WarehouseMessage extends Message
+class WarehouseMessage
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer',name:'id')]
     private $id;
 
-    #[ORM\Column(type: 'string', length: 20)]
-    private $code1;
+    #[ORM\Column(type: 'string', length: 255)]
+    private $messageFrom;
+
+    #[ORM\Column(type: 'text')]
+    private $textBody;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private $profileName;
+
+    #[ORM\Column(type: 'bigint')]
+    private $waId;
+
+    #[ORM\Column(type: 'string', length: 1)]
+    private $status;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private $code;
+
+    #[ORM\Column(type: 'bigint')]
+    private $timestamp;
+
+    #[ORM\Column(type: 'datetime')]
+    private $created;
 
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
     private $code2;
@@ -35,14 +56,99 @@ class WarehouseMessage extends Message
         return $this->id;
     }
 
-    public function getCode1(): ?string
+
+    public function getMessageFrom(): ?string
     {
-        return $this->code1;
+        return $this->messageFrom;
     }
 
-    public function setCode1(?string $code1): self
+    public function setMessageFrom(string $messageFrom): self
     {
-        $this->code1 = $code1;
+        $this->messageFrom = $messageFrom;
+
+        return $this;
+    }
+
+    public function getTextBody(): ?string
+    {
+        return $this->textBody;
+    }
+
+    public function setTextBody(string $textBody): self
+    {
+        $this->textBody = $textBody;
+
+        return $this;
+    }
+
+    public function getTimestamp(): ?string
+    {
+        return $this->timestamp;
+    }
+
+    public function setTimestamp(string $timestamp): self
+    {
+        $this->timestamp = $timestamp;
+
+        return $this;
+    }
+
+    public function getProfileName(): ?string
+    {
+        return $this->profileName;
+    }
+
+    public function setProfileName(string $profileName): self
+    {
+        $this->profileName = $profileName;
+
+        return $this;
+    }
+
+    public function getWaId(): ?string
+    {
+        return $this->waId;
+    }
+
+    public function setWaId(string $waId): self
+    {
+        $this->waId = $waId;
+
+        return $this;
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getCreated(): ?\DateTimeInterface
+    {
+        return $this->created;
+    }
+
+    public function setCreated(\DateTimeInterface $created): self
+    {
+        $this->created = $created;
+
+        return $this;
+    }
+
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
+    public function setCode(string $code): self
+    {
+        $this->code = $code;
 
         return $this;
     }

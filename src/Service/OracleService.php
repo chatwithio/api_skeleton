@@ -18,7 +18,7 @@ class OracleService
     {
         $this->logger = $logger;
 
-        if(!$_SERVER['APP_ENV'] == 'dev'){
+        if($_SERVER['APP_ENV'] == 'dev'){
             $this->dev = true;
         }
         else{
@@ -28,7 +28,7 @@ class OracleService
 
     private function connect(){
         try {
-            //$this->conn = oci_connect('axtra', 'axtra', '10.247.9.154/Axtra');
+            $this->conn = oci_connect('axtra', 'axtra', '10.247.9.154/Axtra');
         }
         catch (\Exception $exception){
             $this->logger->error($exception->getMessage());

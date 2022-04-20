@@ -60,7 +60,7 @@ class ProcessMessage{
              'name'      => null,
              'wa_id'     => null,
              'timestamp' => null,
-             'code1'     => null,
+             'code'     => null,
              'code2' => null
          ];
     }
@@ -188,27 +188,26 @@ class ProcessMessage{
         //Have to whitelist
         $warehouse = $this->em->getRepository(WarehouseMessage::class)->getLastMessage($this->message['wa_id']);
 
-        if($this->message['code1'] || $this->message['code2']){
+        if($this->message['code'] || $this->message['code2']){
             $warehouse = new WarehouseMessage();
             $warehouse->setMessageFrom($this->message['from']);
             $warehouse->setTextBody($this->message['message']);
             $warehouse->setProfileName($this->message['name']);
             $warehouse->setWaId($this->message['wa_id']);
             $warehouse->setStatus('');
-            $warehouse->setCode1((string)$this->message['code1']);
+            $warehouse->setcode((string)$this->message['code']);
             $warehouse->setCode2($this->message['code2']);
             $warehouse->setTimestamp($this->message['timestamp']);
             $warehouse->setCreated(new \DateTime("now"));
             $this->em->persist($warehouse);
         }
-        else{
-            //get last one
-            $warehouse = $this->em->getRepository(WarehouseMessage::class)->getLastMessage($this->message['wa_id']);
-        }
+
+        //dd($warehouse);
 
         if($warehouse){
             $photo = new Photo();
             $photo->setWhatsappImageIdentifier($this->message['image_id']);
+            $photo->setCreated(new \DateTime("now"));
             $this->em->persist($photo);
             $warehouse->addPhoto($photo);
             $this->em->flush();
@@ -227,7 +226,7 @@ class ProcessMessage{
 
         else if(preg_match('/^(FOTOS|FOTO) ([0-9]{7,8})( [a-zA-Z0-9]{4}-[a-zA-Z0-9]{6}\.[a-zA-Z0-9])?/i', $this->message['message'], $matches)){
 
-            $this->message['code1'] = $matches[2];
+            $this->message['code'] = $matches[2];
             if(isset($matches[3])){
                 $this->message['code2'] = trim($matches[3]);
             }

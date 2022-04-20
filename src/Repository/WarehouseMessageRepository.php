@@ -21,7 +21,7 @@ class WarehouseMessageRepository extends ServiceEntityRepository
 
 
     public function getLastMessage($id)
-    {return;
+    {
         return  $this->createQueryBuilder('w')
             ->andWhere('w.waId = :id')
             ->setParameter('id', $id)
@@ -29,7 +29,7 @@ class WarehouseMessageRepository extends ServiceEntityRepository
             ->setParameter('hourago', new \DateTime("now - 1 hour"))
             ->setMaxResults(1)
             ->getQuery()
-            ->getResult()
+            ->getOneOrNullResult()
         ;
     }
 
