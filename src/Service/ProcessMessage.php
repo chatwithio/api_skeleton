@@ -12,7 +12,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
-class ProcessMessage{
+class ProcessMessage
+{
 
     private $logger;
 
@@ -25,15 +26,17 @@ class ProcessMessage{
     private $sendmail;
 
     private $message = [
-        'type'      => null,
-        'message'   => null,
-        'image_id'  => null,
-        'from'      => null,
-        'name'      => null,
-        'wa_id'     => null,
-        'timestamp' => null
+        'type' => null,
+        'message' => null,
+        'image_id' => null,
+        'from' => null,
+        'name' => null,
+        'wa_id' => null,
+        'timestamp' => null,
+        'code' => null,
+        'code2' => null,
+        'mime' => null
     ];
-
 
 
     private $mess = [
@@ -54,61 +57,58 @@ class ProcessMessage{
         $this->oracle = $oracle;
     }
 
-    private function reset(){
-         $this->message = [
-             'message'   => null,
-             'image_id'  => null,
-             'from'      => null,
-             'name'      => null,
-             'wa_id'     => null,
-             'timestamp' => null,
-             'code'     => null,
-             'code2' => null,
-             'mime' => null
-         ];
+    private function reset()
+    {
+        $this->message = [
+            'type' => null,
+            'message' => null,
+            'image_id' => null,
+            'from' => null,
+            'name' => null,
+            'wa_id' => null,
+            'timestamp' => null,
+            'code' => null,
+            'code2' => null,
+            'mime' => null
+        ];
     }
 
-    public function process($datas){
+    public function process($datas)
+    {
         foreach ($datas['messages'] as $k => $data) {
 
-            if(!$this->extractMessageData($data)){
+            if (!$this->extractMessageData($data)) {
                 die("extraction failed");
             }
 
             $this->extractMetaData($datas['contacts'][$k]);
 
-            if($type = $this->isHelp($this->message['message'])){
-                if($type == 'A'){
-                    $this->service->sendWhatsAppText(
-                        $this->message['wa_id'],
-                        "Para informar de entregas / Recogidas: Cuando este en almacén del Exportador (recogida), o una vez esté en el almacén del importador para hacer una entrega, hay que enviar el Num de Albaran, indicado arriba a mano derecha : ALBARAN TT :  XXXXXX - SOLO EL NUMERO,   NADA MAS"
-                    );
-                }
+            if ($this->isHelp($this->message['message'])) {
                 continue;
             }
 
-            if($this->isWarehouse()){
-                $photo = $this->processWarehouseMessage();
-            }
-            else{
+            if ($this->isWarehouse()) {
+                $this->processWarehouseMessage();
+            } else {
                 $this->processDeliveryMessage();
-                $this->sendDeliveryEmail();
             }
+            $this->reset();
         }
     }
 
-    private function isHelp($s){
+    private function isHelp($s)
+    {
         switch ($s) {
             case "INSTRUCCIONES":
-                return "I";
             case "COMO ENVIAR":
-                return "CE";
             case "GUIA":
-                return "G";
             case "AYUDA":
-                return "A";
             case "HELP":
-                return "H";
+                $this->service->sendWhatsAppText(
+                    $this->message['wa_id'],
+                    "Para informar de entregas / Recogidas: Cuando este en almacén del Exportador (recogida), o una vez esté en el almacén del importador para hacer una entrega, hay que enviar el Num de Albaran, indicado arriba a mano derecha : ALBARAN TT :  XXXXXX - SOLO EL NUMERO,   NADA MAS"
+                );
+                return true;
             default:
                 return false;
         }
@@ -117,10 +117,9 @@ class ProcessMessage{
 
     private function isWarehouse(): bool
     {
-        if($this->message['image_id']){
+        if ($this->message['image_id']) {
             return true;
-        }
-        else if(preg_match('/^FOTO(S) [0-9]{7,8}/i', $this->message['message'])){
+        } else if (preg_match('/^FOTO(S) [0-9]{7,8}/i', $this->message['message'])) {
             return true;
         }
         return false;
@@ -129,22 +128,21 @@ class ProcessMessage{
 
     private function extractMessageData($data): bool
     {
+        $this->message['timestamp'] = $data['timestamp'];
+        $this->message['from'] = $data['from'];
 
-        $this->message['timestamp']= $data['timestamp'];
-        $this->message['from']= $data['from'];
-
-        if(isset($data['image'])){
+        if (isset($data['image'])) {
 
             $this->message['image_id'] = $data['image']['id'];
 
             $this->message['mime'] = $data['image']['mime_type'];
 
-            if(!empty($data['image']['caption'])){
+            if (!empty($data['image']['caption'])) {
                 $this->message['message'] = $data['image']['caption'];
             }
             return true;
         }
-        if(isset($data['text']['body'])){
+        if (isset($data['text']['body'])) {
             $this->message['message'] = $data['text']['body'];
             return true;
         }
@@ -157,31 +155,29 @@ class ProcessMessage{
         $this->message['wa_id'] = $data['wa_id'];
     }
 
-    private function processDeliveryMessage(){
-
+    private function processDeliveryMessage()
+    {
         try {
+            $this->message['code'] = $this->extractCode($this->message['message']);
 
-            $code = $this->extractCode($this->message['message']);
-
-            if(!$code){
-                $this->validationError($this->mess["E"]." $code");
+            if (!$this->message['code']) {
+                $this->validationError($this->mess["E"] .' '. $this->message['code']);
                 return;
             }
-
             $message = new message();
             $message->setMessageFrom($this->message['from']);
             $message->setTextBody($this->message['message']);
             $message->setProfileName($this->message['name']);
             $message->setWaId($this->message['wa_id']);
             $message->setStatus("S");
-            $message->setCode($code);
+            $message->setCode($this->message['code']);
             $message->setTimestamp($this->message['timestamp']);
             $message->setCreated(new \DateTime("now"));
             $this->em->persist($message);
             $this->em->flush();
 
             $this->service->sendWhatsAppText(
-                $this->message['wa_id'], $this->mess["S"].': '.$code
+                $this->message['wa_id'], $this->mess["S"] . ': ' . $this->message['code']
             );
         } catch (Exception $e) {
             $this->logger->error($e->getMessage());
@@ -190,14 +186,16 @@ class ProcessMessage{
         $this->sendDeliveryEmail();
     }
 
-    private function sendDeliveryEmail(){
+    private function sendDeliveryEmail()
+    {
         try {
+
             $email = (new Email())
                 ->from('it@gl-uniexco.com')
-                ->to('transporte@gl-uniexco.com')
+                ->to('wardazo@gmail.com')
                 ->subject($this->message['code'])
                 ->text($this->message['message'])
-                ->html('<p>'.$this->message['message'].'</p>');
+                ->html('<p>' . $this->message['message'] . '</p>');
             $this->mailer->send($email);
 
         } catch (Exception $e) {
@@ -205,9 +203,10 @@ class ProcessMessage{
         }
     }
 
-    private function processWarehouseMessage(){
+    private function processWarehouseMessage()
+    {
 
-        if(!$this->validateWarehouseMessage()){
+        if (!$this->validateWarehouseMessage()) {
             $this->validationError('Este formato no es valido para el almacen');
             return;
         }
@@ -215,7 +214,7 @@ class ProcessMessage{
         //Have to whitelist
         $warehouse = $this->em->getRepository(WarehouseMessage::class)->getLastMessage($this->message['wa_id']);
 
-        if($this->message['code'] || $this->message['code2']){
+        if ($this->message['code'] || $this->message['code2']) {
             $warehouse = new WarehouseMessage();
             $warehouse->setMessageFrom($this->message['from']);
             $warehouse->setTextBody($this->message['message']);
@@ -227,9 +226,10 @@ class ProcessMessage{
             $warehouse->setTimestamp($this->message['timestamp']);
             $warehouse->setCreated(new \DateTime("now"));
             $this->em->persist($warehouse);
+            $this->em->flush();
         }
 
-        if($warehouse){
+        if ($warehouse && $this->message['image_id']) {
             $photo = new Photo();
             $photo->setWhatsappImageIdentifier($this->message['image_id']);
             $photo->setCreated(new \DateTime("now"));
@@ -239,62 +239,83 @@ class ProcessMessage{
             $this->em->flush();
             $this->sendWarehouseEmail($photo);
             return $photo;
-        }
-        else{
-            $this->service->sendWhatsAppText(
-                $this->message['wa_id'],
-                "No hemos encontrado ningún dato para esta imagen"
-            );
+        } else if($this->message['image_id']) {
+            $this->validationError("No hemos encontrado ningún dato para esta imagen");
+            return;
         }
     }
 
-    private function validateWarehouseMessage(){
-
-        if(!$this->message['message'] && $this->message['image_id']){
-            return true;
+    private function validateWarehouseMessage()
+    {
+        if(!$this->oracle->checkTel($this->message['from'])){
+            $this->validationError("Este numero de telefono no es del almacen");
+            return false;
         }
 
-        else if(preg_match('/^(FOTOS|FOTO) ([0-9]{7,8})( [a-zA-Z0-9]{4}-[a-zA-Z0-9]{6}\.[a-zA-Z0-9])?$/i', $this->message['message'], $matches)){
+        if (!$this->message['message'] && $this->message['image_id']) {
+            return true;
+        }
+        else if (preg_match('/^(FOTOS|FOTO) ([0-9]{6,8})( [a-zA-Z0-9]{4}-[a-zA-Z0-9]{6}\.[a-zA-Z0-9])?$/i', $this->message['message'], $matches)) {
 
             $this->message['code'] = $matches[2];
-            if(isset($matches[3])){
+            if (isset($matches[3])) {
                 $this->message['code2'] = trim($matches[3]);
+
+                if(!$this->oracle->checkExpCont($this->message['code'], $this->message['code2'])){
+                    $this->validationError("Este numero de teléfono no es del almacén");
+                    return false;
+                }
+
+            }
+            else{
+                if(!$this->oracle->checkExp($this->message['code'])){
+                    $this->validationError("Este numero de teléfono no es del almacén");
+                    return false;
+                }
             }
             return true;
         }
         return false;
     }
 
-    private function sendWarehouseEmail($photo){
 
-        $warehouseMessage = $photo->getWarehouseMessage();
-
+    private function sendWarehouseEmail($photo)
+    {
         $identifier = $this->service->getMedia($photo->getWhatsappImageIdentifier());
 
-        if(is_object($photo) && $identifier){
+        if (is_object($photo) && $identifier) {
+
             $mime = $photo->getMime();
-            $expMime = explode("/",$mime);
+            $expMime = explode("/", $mime);
+
+            $subject = $this->message['code'];
+            if ($this->message['code2']) {
+                $subject = $this->message['code'] . ' ' . $this->message['code2'];
+            }
+
             $email = (new Email())
                 ->from('it@gl-uniexco.com')
                 //->to('transporte@gl-uniexco.com')
                 ->to('wardazo@gmail.com')
-                ->subject('Código enviado')
+                ->subject($subject)
                 ->text($this->message['message'])
-                ->html('<p>'.$this->message['message'].'</p>')
-                ->attach($identifier,'imagen.'.$expMime[1],$mime);
-                $this->mailer->send($email);
+                ->html('<p>' . $this->message['message'] . '</p>')
+                ->attach($identifier, 'imagen.' . $expMime[1], $mime);
+            $this->mailer->send($email);
 
         }
     }
 
-    private function validationError($message){
-        if ($_SERVER['APP_ENV']=='dev'){
+    private function validationError($message)
+    {
+        if ($_SERVER['APP_ENV'] == 'dev') {
             dd($message);
         }
         $this->service->sendWhatsAppText($message);
     }
 
-    private function extractCode($text){
+    private function extractCode($text)
+    {
         if (preg_match("/\d{6,7}/", $text, $matches)) {
             if (!empty($matches[0])) {
                 return $matches[0];
@@ -302,6 +323,5 @@ class ProcessMessage{
         }
         return false;
     }
-
 
 }
