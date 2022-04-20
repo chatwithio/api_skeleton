@@ -32,12 +32,12 @@ class HookController extends AbstractController
     }
 
 
-    #[Route('/email-xyx')]
-    public function sendEmail(MailerInterface $mailer, MessageService $service): Response
-    {
-        $x = $service->getMedia('b112e761-9fdb-488c-80be-b2f3fbefa229');
-        dd($x);
-    }
+//    #[Route('/email-xyx')]
+//    public function sendEmail(MailerInterface $mailer, MessageService $service): Response
+//    {
+//        $x = $service->getMedia('b112e761-9fdb-488c-80be-b2f3fbefa229');
+//        dd($x);
+//    }
 }
 
 

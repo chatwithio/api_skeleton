@@ -25,16 +25,12 @@ class WhatsappNotificationHandler
     public function __construct(LoggerInterface $logger, ProcessMessage $processMessage)
     {
         $this->logger = $logger;
-        $this->processMessage =$processMessage;
+        $this->processMessage = $processMessage;
     }
 
     public function __invoke(WhatsappNotification $message)
     {
-
-            $datas = json_decode($message->getContent(), true);
-            $this->processMessage->process($datas);
-            dd($datas);
-
-
+        $datas = json_decode($message->getContent(), true);
+        $this->processMessage->process($datas);
     }
 }

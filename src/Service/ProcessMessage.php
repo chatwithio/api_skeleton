@@ -43,6 +43,8 @@ class ProcessMessage{
 
     private $oracle;
 
+    private $hasError = false;
+
     public function __construct(LoggerInterface $logger, EntityManagerInterface $em, MessageService $service, MailerInterface $mailer, OracleService $oracle)
     {
         $this->logger = $logger;
@@ -68,27 +70,49 @@ class ProcessMessage{
 
     public function process($datas){
         foreach ($datas['messages'] as $k => $data) {
-            $this->reset();
+
             if(!$this->extractMessageData($data)){
                 die("extraction failed");
             }
 
             $this->extractMetaData($datas['contacts'][$k]);
 
-            dump($this->message);
+            if($type = $this->isHelp($this->message['message'])){
+                if($type == 'A'){
+                    $this->service->sendWhatsAppText(
+                        $this->message['wa_id'],
+                        "Para informar de entregas / Recogidas: Cuando este en almacén del Exportador (recogida), o una vez esté en el almacén del importador para hacer una entrega, hay que enviar el Num de Albaran, indicado arriba a mano derecha : ALBARAN TT :  XXXXXX - SOLO EL NUMERO,   NADA MAS"
+                    );
+                }
+                continue;
+            }
 
             if($this->isWarehouse()){
-                dump("warehouse");
                 $photo = $this->processWarehouseMessage();
-                $this->sendWarehouseEmail($photo);
             }
             else{
-                dump("external delivery");
                 $this->processDeliveryMessage();
                 $this->sendDeliveryEmail();
-
             }
         }
+    }
+
+    private function isHelp($s){
+        switch ($s) {
+            case "INSTRUCCIONES":
+                return "I";
+            case "COMO ENVIAR":
+                return "CE";
+            case "GUIA":
+                return "G";
+            case "AYUDA":
+                return "A";
+            case "HELP":
+                return "H";
+            default:
+                return false;
+        }
+        return false;
     }
 
     private function isWarehouse(): bool
@@ -171,7 +195,7 @@ class ProcessMessage{
             $email = (new Email())
                 ->from('it@gl-uniexco.com')
                 ->to('transporte@gl-uniexco.com')
-                ->subject('Código enviado')
+                ->subject($this->message['code'])
                 ->text($this->message['message'])
                 ->html('<p>'.$this->message['message'].'</p>');
             $this->mailer->send($email);
@@ -213,10 +237,14 @@ class ProcessMessage{
             $this->em->persist($photo);
             $warehouse->addPhoto($photo);
             $this->em->flush();
+            $this->sendWarehouseEmail($photo);
             return $photo;
         }
         else{
-            //send error message
+            $this->service->sendWhatsAppText(
+                $this->message['wa_id'],
+                "No hemos encontrado ningún dato para esta imagen"
+            );
         }
     }
 
@@ -244,11 +272,8 @@ class ProcessMessage{
         $identifier = $this->service->getMedia($photo->getWhatsappImageIdentifier());
 
         if(is_object($photo) && $identifier){
-
             $mime = $photo->getMime();
-
             $expMime = explode("/",$mime);
-
             $email = (new Email())
                 ->from('it@gl-uniexco.com')
                 //->to('transporte@gl-uniexco.com')
@@ -259,9 +284,7 @@ class ProcessMessage{
                 ->attach($identifier,'imagen.'.$expMime[1],$mime);
                 $this->mailer->send($email);
 
-                dd("mail sent");
         }
-        dd("BAAAD");
     }
 
     private function validationError($message){
@@ -280,28 +303,5 @@ class ProcessMessage{
         return false;
     }
 
-//    private function emptyOrNewPhoto($warehouse, $code,$image){
-//
-//        $lastPhoto = $this->em->getRepository(Photo::class)->findOneBy([
-//            "warehouseMessage" => $warehouse,
-//        ],['id'=>'DESC']);
-//
-//        if(!$lastPhoto){
-//            return new Photo();
-//        }
-//        else if($lastPhoto->getWhatsappImageIdentifier() && $lastPhoto->getCode()){
-//            return new Photo();
-//        }
-//        else if($code && !$lastPhoto->getCode()){
-//            //find an image without a code
-//            return $lastPhoto;
-//        }
-//        elseif($image && !$lastPhoto->getWhatsappImageIdentifier()){
-//            return $lastPhoto;
-//        }
-//        else{
-//            //report orphan!
-//        }
-//    }
 
 }
