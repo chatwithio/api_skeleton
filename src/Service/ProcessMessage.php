@@ -288,9 +288,9 @@ class ProcessMessage
             $mime = $photo->getMime();
             $expMime = explode("/", $mime);
 
-            $subject = $this->message['code'];
-            if ($this->message['code2']) {
-                $subject = $this->message['code'] . ' ' . $this->message['code2'];
+            $subject = $photo->getWarehouseMessage()->getCode();
+            if ($photo->getWarehouseMessage()->getCode2()) {
+                $subject = $subject . ' ' . $photo->getWarehouseMessage()->getCode2();
             }
 
             $email = (new Email())
