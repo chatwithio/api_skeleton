@@ -61,7 +61,8 @@ class ProcessMessage{
              'wa_id'     => null,
              'timestamp' => null,
              'code'     => null,
-             'code2' => null
+             'code2' => null,
+             'mime' => null
          ];
     }
 
@@ -78,13 +79,13 @@ class ProcessMessage{
 
             if($this->isWarehouse()){
                 dump("warehouse");
-                $this->processWarehouseMessage();
+                $photo = $this->processWarehouseMessage();
+                $this->sendWarehouseEmail($photo);
             }
             else{
                 dump("external delivery");
-                $photo = $this->processDeliveryMessage();
-
-                $this->sendWarehouseEmail($photo);
+                $this->processDeliveryMessage();
+                $this->sendDeliveryEmail();
 
             }
         }
@@ -111,6 +112,8 @@ class ProcessMessage{
         if(isset($data['image'])){
 
             $this->message['image_id'] = $data['image']['id'];
+
+            $this->message['mime'] = $data['image']['mime_type'];
 
             if(!empty($data['image']['caption'])){
                 $this->message['message'] = $data['image']['caption'];
@@ -202,12 +205,11 @@ class ProcessMessage{
             $this->em->persist($warehouse);
         }
 
-        //dd($warehouse);
-
         if($warehouse){
             $photo = new Photo();
             $photo->setWhatsappImageIdentifier($this->message['image_id']);
             $photo->setCreated(new \DateTime("now"));
+            $photo->setMime($this->message['mime']);
             $this->em->persist($photo);
             $warehouse->addPhoto($photo);
             $this->em->flush();
@@ -224,7 +226,7 @@ class ProcessMessage{
             return true;
         }
 
-        else if(preg_match('/^(FOTOS|FOTO) ([0-9]{7,8})( [a-zA-Z0-9]{4}-[a-zA-Z0-9]{6}\.[a-zA-Z0-9])?/i', $this->message['message'], $matches)){
+        else if(preg_match('/^(FOTOS|FOTO) ([0-9]{7,8})( [a-zA-Z0-9]{4}-[a-zA-Z0-9]{6}\.[a-zA-Z0-9])?$/i', $this->message['message'], $matches)){
 
             $this->message['code'] = $matches[2];
             if(isset($matches[3])){
@@ -236,9 +238,30 @@ class ProcessMessage{
     }
 
     private function sendWarehouseEmail($photo){
-        if(is_object($photo) && $photo->getWhatsappImageIdentifier() && $photo->getCode){
-            //send email
+
+        $warehouseMessage = $photo->getWarehouseMessage();
+
+        $identifier = $this->service->getMedia($photo->getWhatsappImageIdentifier());
+
+        if(is_object($photo) && $identifier){
+
+            $mime = $photo->getMime();
+
+            $expMime = explode("/",$mime);
+
+            $email = (new Email())
+                ->from('it@gl-uniexco.com')
+                //->to('transporte@gl-uniexco.com')
+                ->to('wardazo@gmail.com')
+                ->subject('Código enviado')
+                ->text($this->message['message'])
+                ->html('<p>'.$this->message['message'].'</p>')
+                ->attach($identifier,'imagen.'.$expMime[1],$mime);
+                $this->mailer->send($email);
+
+                dd("mail sent");
         }
+        dd("BAAAD");
     }
 
     private function validationError($message){

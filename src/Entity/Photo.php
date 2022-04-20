@@ -24,6 +24,9 @@ class Photo
     #[ORM\JoinColumn(nullable: false)]
     private $WarehouseMessage;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private $mime;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -61,6 +64,18 @@ class Photo
     public function setWarehouseMessage(?WarehouseMessage $WarehouseMessage): self
     {
         $this->WarehouseMessage = $WarehouseMessage;
+
+        return $this;
+    }
+
+    public function getMime(): ?string
+    {
+        return $this->mime;
+    }
+
+    public function setMime(?string $mime): self
+    {
+        $this->mime = $mime;
 
         return $this;
     }

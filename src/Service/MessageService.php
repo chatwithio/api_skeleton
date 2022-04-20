@@ -79,7 +79,7 @@ class MessageService
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
 
-    private function send($endpoint, $data = [], $arg = '')
+    private function send($endpoint, $data = [], $arg = '', $json=true)
     {
 
         try {
@@ -94,15 +94,14 @@ class MessageService
                     ]
                 );
 
-
-
-
                 if ($request->getStatusCode() == 200 || $request->getStatusCode() == 201) {
-                    dump($request->getContent());
-                    dump($this->endpoint[$endpoint]['url']);
+                    //dump($request->getContent());
+                    //dump($this->endpoint[$endpoint]['url']);
+                    if(!$json){
+                        return $request->getContent();
+                    }
                     return json_decode($request->getContent());
                 } else {
-                    dd($request);
                     throw new Exception($request->getBody()->getContents());
                 }
             } else {
@@ -237,7 +236,7 @@ class MessageService
 
     public function getMedia($id)
     {
-        return $this->send('getMedia',null,$id);
+        return $this->send('getMedia',null,$id,false);
     }
 
     public function getTemplates()
