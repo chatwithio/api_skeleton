@@ -265,7 +265,7 @@ class ProcessMessage
     private function validateWarehouseMessage()
     {
         if(!$this->oracle->checkTel($this->message['from'])){
-            $this->validationError("Este número de teléfono no es del almacén");
+            $this->validationError("Este número no está autorizado para enviar fotos a nuestro sistema. Conctacte con el departamento de Informática de Globelink Uniexco en el caso de querer añadir este teléfono.");
             return false;
         }
 

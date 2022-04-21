@@ -46,7 +46,7 @@ class OracleService
         if($this->dev) return true;
         $stid = oci_parse(
             $this->conn,
-            "SELECT * FROM UNIEXCO.TT_CTN WHERE EXPEDICION=$xxxxxxx AND CONTENEDOR='$item'"
+            "SELECT * FROM UNIEXCO.TT_CTN WHERE EXPEDICION=$xxxxxxx AND upper(CONTENEDOR)=upper('$item')"
         );
         return $this->process($stid);
     }
