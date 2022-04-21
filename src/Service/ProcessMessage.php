@@ -75,6 +75,11 @@ class ProcessMessage
 
     public function process($datas)
     {
+
+        if(!isset($datas['messages'])){
+            return;
+        }
+
         foreach ($datas['messages'] as $k => $data) {
 
             if (!$this->extractMessageData($data)) {
@@ -119,7 +124,7 @@ class ProcessMessage
     {
         if ($this->message['image_id']) {
             return true;
-        } else if (preg_match('/^FOTO(S) [0-9]{7,8}/i', $this->message['message'])) {
+        } else if (preg_match('/^FOTO(S) [0-9]{6,8}/i', $this->message['message'])) {
             return true;
         }
         return false;
@@ -192,7 +197,8 @@ class ProcessMessage
 
             $email = (new Email())
                 ->from('it@gl-uniexco.com')
-                ->to('wardazo@gmail.com')
+                //->to('wardazo@gmail.com')
+                ->to('transporte@gl-uniexco.com')
                 ->subject($this->message['code'])
                 ->text($this->message['message'])
                 ->html('<p>' . $this->message['message'] . '</p>');
@@ -207,7 +213,7 @@ class ProcessMessage
     {
 
         if (!$this->validateWarehouseMessage()) {
-            $this->validationError('Este formato no es valido para el almacen');
+            //$this->validationError('Este formato no es valido para el almacen');
             return;
         }
 
@@ -243,12 +249,23 @@ class ProcessMessage
             $this->validationError("No hemos encontrado ningún dato para esta imagen");
             return;
         }
+        elseif($warehouse){
+            $subject = $warehouse->getCode();
+            if ($warehouse->getCode2()) {
+                $subject = $subject . ' ' . $warehouse->getCode2();
+            }
+            $this->service->sendWhatsAppText($this->message['wa_id'], $subject.' recibido');
+        }
+        else{
+            $this->validationError("No hemos podido procesar este dato");
+            return;
+        }
     }
 
     private function validateWarehouseMessage()
     {
         if(!$this->oracle->checkTel($this->message['from'])){
-            $this->validationError("Este numero de telefono no es del almacen");
+            $this->validationError("Este número de teléfono no es del almacén");
             return false;
         }
 
@@ -262,19 +279,20 @@ class ProcessMessage
                 $this->message['code2'] = trim($matches[3]);
 
                 if(!$this->oracle->checkExpCont($this->message['code'], $this->message['code2'])){
-                    $this->validationError("Este numero de teléfono no es del almacén");
+                    $this->validationError("Uno de estos 2 códigos  no está en la BBDD");
                     return false;
                 }
 
             }
             else{
                 if(!$this->oracle->checkExp($this->message['code'])){
-                    $this->validationError("Este numero de teléfono no es del almacén");
+                    $this->validationError("Este código  no está en la BBDD");
                     return false;
                 }
             }
             return true;
         }
+        $this->validationError("Este formato no es válido para el almacén.");
         return false;
     }
 
@@ -295,13 +313,15 @@ class ProcessMessage
 
             $email = (new Email())
                 ->from('it@gl-uniexco.com')
-                //->to('transporte@gl-uniexco.com')
-                ->to('wardazo@gmail.com')
+                ->to('transporte@gl-uniexco.com')
+                //->to('wardazo@gmail.com')
                 ->subject($subject)
                 ->text($this->message['message'])
                 ->html('<p>' . $this->message['message'] . '</p>')
                 ->attach($identifier, 'imagen.' . $expMime[1], $mime);
             $this->mailer->send($email);
+
+            $this->service->sendWhatsAppText($this->message['wa_id'], $subject.' recibido');
 
         }
     }
@@ -311,7 +331,7 @@ class ProcessMessage
         if ($_SERVER['APP_ENV'] == 'dev') {
             dd($message);
         }
-        $this->service->sendWhatsAppText($message);
+        $this->service->sendWhatsAppText($this->message['wa_id'], $message);
     }
 
     private function extractCode($text)
