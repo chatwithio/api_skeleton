@@ -332,9 +332,9 @@ class ProcessMessage
 
             $email = (new Email())
                 ->from('it@gl-uniexco.com')
-                ->to('j.ferres@gl-uniexco.com','j.sobrevias@gl-uniexco.com')
+                ->to('j.ferres@gl-uniexco.com','almacen@gl-uniexco.com')
                 //->to('wardazo@gmail.com')
-                ->subject("FOTOS ".$subject)
+                ->subject("FOTOS ".$subject." MÓVIL:".$this->message['from'])
                 ->text($this->message['message'])
                 ->html('<p>' . $this->message['message'] . '</p>')
                 ->attach($identifier, 'imagen.' . $expMime[1], $mime);
