@@ -26,7 +26,7 @@ class WarehouseMessageRepository extends ServiceEntityRepository
             ->andWhere('w.waId = :id')
             ->setParameter('id', $id)
             ->andWhere('w.created > :hourago')
-            ->setParameter('hourago', new \DateTime("now - 1 hour"))
+            ->setParameter('hourago', new \DateTime("10 minutes ago"))
             ->setMaxResults(1)
             ->orderBy('w.id','DESC')
             ->getQuery()

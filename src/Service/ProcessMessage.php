@@ -124,7 +124,7 @@ class ProcessMessage
     {
         if ($this->message['image_id']) {
             return true;
-        } else if (preg_match('/^FOTO(S) [0-9]{6,8}/i', $this->message['message'])) {
+        } else if (preg_match('/^(FOTO|FOTOS) [0-9]{6,8}/i', $this->message['message'])) {
             return true;
         }
         return false;
@@ -272,11 +272,14 @@ class ProcessMessage
         if (!$this->message['message'] && $this->message['image_id']) {
             return true;
         }
-        else if (preg_match('/^(FOTOS|FOTO) ([0-9]{6,8})( [a-zA-Z0-9]{4}-[a-zA-Z0-9]{6}\.[a-zA-Z0-9])?$/i', $this->message['message'], $matches)) {
+        else if (preg_match('/^(FOTOS|FOTO) ([0-9]{6,8})( [a-zA-Z0-9]{4}-?[a-zA-Z0-9]{6}\.?[a-zA-Z0-9])?$/i', $this->message['message'], $matches)) {
 
             $this->message['code'] = $matches[2];
             if (isset($matches[3])) {
-                $this->message['code2'] = trim($matches[3]);
+                $this->message['code2'] = $this->conver($matches[3]);
+
+
+
 
                 if(!$this->oracle->checkExpCont($this->message['code'], $this->message['code2'])){
                     $this->validationError("Uno de estos 2 códigos  no está en la BBDD");
@@ -296,6 +299,22 @@ class ProcessMessage
         return false;
     }
 
+    function conver($s){
+
+        $s = trim(strtoupper($s));
+
+        if(!str_contains($s,'-')){
+            $s = substr_replace($s,'-',4,0);
+        }
+
+        if(!str_contains($s,'.')){
+            $s = substr_replace($s,'.',11,0);
+        }
+
+        return $s;
+
+    }
+
 
     private function sendWarehouseEmail($photo)
     {
@@ -313,9 +332,9 @@ class ProcessMessage
 
             $email = (new Email())
                 ->from('it@gl-uniexco.com')
-                ->to('transporte@gl-uniexco.com')
+                ->to('j.ferres@gl-uniexco.com','j.sobrevias@gl-uniexco.com')
                 //->to('wardazo@gmail.com')
-                ->subject($subject)
+                ->subject("FOTOS ".$subject)
                 ->text($this->message['message'])
                 ->html('<p>' . $this->message['message'] . '</p>')
                 ->attach($identifier, 'imagen.' . $expMime[1], $mime);
